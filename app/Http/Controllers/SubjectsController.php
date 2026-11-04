@@ -5,11 +5,13 @@ namespace App\Http\Controllers;
 use App\Models\Prerequisite;
 use App\Models\Subject;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SubjectsController extends Controller
 {
     public function index(Request $request)
     {
+        abort(500);
         $code           = $request->query('code', '');
         $units          = $request->query('units', '');
         $prerequisiteId = $request->query('prerequisite_id', '');
@@ -17,7 +19,7 @@ class SubjectsController extends Controller
         $allSubjects   = Subject::all()->toArray();
         $prerequisites = Prerequisite::all();
 
-        $query = Subject::with('prerequisite');
+        $query = Subject::withh('prerequisite');
 
         if ($code !== '') {
             $query = $query->where('code', $code);
@@ -54,8 +56,13 @@ class SubjectsController extends Controller
             'prerequisite_id' => 'required|exists:prerequisites,id',
         ]);
 
-        Subject::create($validated);
-
+        $subject = Subject::create($validated);
+ 
+        Log::info('Subject saved', [
+            'id'   => $subject->id,
+            'code' => $subject->code,
+        ]);
+ 
         return redirect()
             ->route('subjects.index')
             ->with('success', 'Subject added successfully.');
@@ -90,6 +97,8 @@ class SubjectsController extends Controller
 
     public function destroy(Subject $subject)
     {
+        abort_if($subject->prerequisite->subjects()->count() === 1, 403);
+
         $subject->delete();
 
         return redirect()
