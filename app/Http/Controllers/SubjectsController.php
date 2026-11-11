@@ -9,37 +9,55 @@ use Illuminate\Support\Facades\Log;
 
 class SubjectsController extends Controller
 {
-    public function index(Request $request)
-    {
-        abort(500);
-        $code           = $request->query('code', '');
-        $units          = $request->query('units', '');
-        $prerequisiteId = $request->query('prerequisite_id', '');
+    
+   public function index(Request $request)
+{
+    $code = $request->query('code', '');
+    $prerequisiteId = $request->query('prerequisite_id', '');
+    $isActive = $request->query('is_active');
 
-        $allSubjects   = Subject::all()->toArray();
-        $prerequisites = Prerequisite::all();
+    // I1-I3: Sorting with an allowed list
+    $sort = $request->query('sort', 'code');
 
-        $query = Subject::withh('prerequisite');
-
-        if ($code !== '') {
-            $query = $query->where('code', $code);
-        }
-
-        if ($units !== '') {
-            $query = $query->where('units', $units);
-        }
-
-        if ($prerequisiteId !== '') {
-            $query = $query->where('prerequisite_id', $prerequisiteId);
-        }
-
-        $subjects = $query->get();
-
-        return view('subjects.index', compact(
-            'subjects', 'allSubjects', 'prerequisites',
-            'code', 'units', 'prerequisiteId'
-        ));
+    if (! in_array($sort, ['code', 'title'], true)) {
+        $sort = 'code';
     }
+
+    $allSubjects = Subject::all()->toArray();
+    $prerequisites = Prerequisite::all();
+
+    $query = Subject::with('prerequisite');
+
+    // Search by subject code
+    if ($code !== '') {
+        $query->where('code', 'like', "%{$code}%");
+    }
+
+    // Filter by prerequisite
+    if ($prerequisiteId !== '') {
+        $query->where('prerequisite_id', $prerequisiteId);
+    }
+
+    // Filter by active or inactive status
+    if ($isActive !== null && $isActive !== '') {
+        $query->where('is_active', $isActive);
+    }
+
+    // I4: Sort first, then paginate and preserve query parameters
+    $subjects = $query->orderBy($sort)
+                      ->paginate(7)
+                      ->withQueryString();
+
+    return view('subjects.index', compact(
+        'subjects',
+        'allSubjects',
+        'prerequisites',
+        'code',
+        'prerequisiteId',
+        'isActive',
+        'sort'
+    ));
+}
 
     public function create()
     {

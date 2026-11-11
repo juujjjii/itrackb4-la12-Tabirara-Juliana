@@ -10,39 +10,38 @@ class SubjectSeeder extends Seeder
 {
     public function run(): void
     {
-        // Lookup rows first
+        // Create lookup records
         $a = Prerequisite::create(['name' => 'Capstone Project 1']);
         $b = Prerequisite::create(['name' => 'Web Programming 1']);
         $c = Prerequisite::create(['name' => 'Networking 1']);
 
-        Subject::create([
-            'code' => 'CAP102', 'title' => 'Capstone Project 2',
-            'units' => 3, 'is_active' => true, 'prerequisite_id' => $a->id,
-        ]);
+        // Create 20 subject records
+        $subjects = [
+            ['CAP102', 'Capstone Project 2', 3, true, $a->id],
+            ['ITP1333', 'Information Assurance', 3, true, $c->id],
+            ['ITP1441', 'System Administration', 3, true, $c->id],
+            ['ITRACKB4', 'Web Programming 2', 3, true, $b->id],
+            ['ITP831', 'Networking 2', 3, true, $c->id],
+            ['ITP123', 'Data Analytics', 3, false, $b->id],
+            ['ITP201', 'Database Management', 3, true, $b->id],
+            ['ITP202', 'Computer Programming 1', 3, true, $b->id],
+            ['ITP203', 'Computer Programming 2', 3, true, $b->id],
+            ['ITP204', 'Mobile Application Development', 3, true, $b->id],
+            ['ITP205', 'Software Engineering', 3, true, $a->id],
+            ['ITP206', 'Systems Analysis and Design', 3, true, $a->id],
+            ['ITP207', 'Network Security', 3, true, $c->id],
+            ['ITP208', 'Cloud Computing', 3, true, $c->id],
+        
+        ];
 
-        Subject::create([
-            'code' => 'ITP1333', 'title' => 'Information Assurance',
-            'units' => 3, 'is_active' => true, 'prerequisite_id' => $c->id,
-        ]);
-
-        Subject::create([
-            'code' => 'ITP1441', 'title' => 'System Administration',
-            'units' => 3, 'is_active' => true, 'prerequisite_id' => $c->id,
-        ]);
-
-        Subject::create([
-            'code' => 'ITRACKB4', 'title' => 'Web Programming 2',
-            'units' => 3, 'is_active' => true, 'prerequisite_id' => $b->id,
-        ]);
-
-        Subject::create([
-            'code' => 'ITP831', 'title' => 'Networking 2',
-            'units' => 3, 'is_active' => true, 'prerequisite_id' => $c->id,
-        ]);
-
-        Subject::create([
-            'code' => 'ITP123', 'title' => 'Data Analytics',
-            'units' => 3, 'is_active' => false, 'prerequisite_id' => $b->id,
-        ]);
+        foreach ($subjects as $subject) {
+            Subject::create([
+                'code' => $subject[0],
+                'title' => $subject[1],
+                'units' => $subject[2],
+                'is_active' => $subject[3],
+                'prerequisite_id' => $subject[4],
+            ]);
+        }
     }
 }
